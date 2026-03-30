@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ring OOS Orders — 3/27</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F3EF;
+    --surface: #FFFFFF;
+    --surface2: #EEECE8;
+    --border: #DEDAD3;
+    --text: #1A1917;
+    --muted: #7A7772;
+    --accent: #1A1917;
+    --green-bg: #EAF3DE;
+    --green-text: #3B6D11;
+    --amber-bg: #FAEEDA;
+    --amber-text: #854F0B;
+    --red-bg: #FCEBEB;
+    --red-text: #A32D2D;
+    --blue-bg: #E6F1FB;
+    --blue-text: #185FA5;
+    --gray-bg: #EEECE8;
+    --gray-text: #5F5E5A;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .wrap { max-width: 1100px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .stamp {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 640px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+  }
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  .metric-value {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .mv-total { color: var(--text); }
+  .mv-green { color: var(--green-text); }
+  .mv-amber { color: var(--amber-text); }
+  .mv-red { color: var(--red-text); }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--muted);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tab:hover { background: var(--surface2); color: var(--text); }
+
+  .tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  .tab-pill {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.2);
+    color: inherit;
+  }
+
+  .tab:not(.active) .tab-pill {
+    background: var(--surface2);
+    color: var(--muted);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 620px;
+  }
+
+  thead { background: var(--surface2); }
+
+  th {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFAF8; }
+
+  .order-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .sku-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .b-green { background: var(--green-bg); color: var(--green-text); }
+  .b-amber { background: var(--amber-bg); color: var(--amber-text); }
+  .b-red   { background: var(--red-bg);   color: var(--red-text);   }
+  .b-blue  { background: var(--blue-bg);  color: var(--blue-text);  }
+  .b-gray  { background: var(--gray-bg);  color: var(--gray-text);  }
+
+  .empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  footer {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="logo">Ridge — Personalization Ops</div>
+      <h1>Ring OOS Orders</h1>
+    </div>
+    <div class="stamp">As of 3/29/2026 &nbsp;·&nbsp; 49 orders</div>
+  </header>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Total OOS</div>
+      <div class="metric-value mv-total">49</div>
+      <div class="metric-sub">open orders</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Ready to place</div>
+      <div class="metric-value mv-green" id="m1">—</div>
+      <div class="metric-sub">on hand or alt SKU</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Inventory arriving</div>
+      <div class="metric-value mv-amber" id="m2">—</div>
+      <div class="metric-sub">via IS27961 · ETA TBA</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Needs ops request</div>
+      <div class="metric-value mv-red" id="m3">—</div>
+      <div class="metric-sub">no stock / no PO</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('ready')">Ready to place <span class="tab-pill" id="tc1">0</span></div>
+    <div class="tab" onclick="showTab('alt')">Alt SKU <span class="tab-pill" id="tc2">0</span></div>
+    <div class="tab" onclick="showTab('arriving')">Inventory arriving <span class="tab-pill" id="tc3">0</span></div>
+    <div class="tab" onclick="showTab('ops')">Needs ops request <span class="tab-pill" id="tc4">0</span></div>
+  </div>
+
+  <div id="ready" class="panel active">
+    <p class="panel-desc">Primary SKU has stock on hand at FTS — place now.</p>
+    <div class="table-wrap"><table id="t-ready">
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>SKU</th><th>On hand</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <div id="alt" class="panel">
+    <p class="panel-desc">Original SKU is OOS but an alt SKU can fulfill the order.</p>
+    <div class="table-wrap"><table id="t-alt">
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>Original SKU</th><th>Alt SKU</th><th>Alt on hand</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <div id="arriving" class="panel">
+    <p class="panel-desc">Linked to PO IS27961 — inventory is on the way, ETA TBA.</p>
+    <div class="table-wrap"><table id="t-arriving">
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>SKU</th><th>PO</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <div id="ops" class="panel">
+    <p class="panel-desc">No stock, no alt SKU, no incoming PO — escalate to ops team to source.</p>
+    <div class="table-wrap"><table id="t-ops">
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>SKU</th><th>Days waiting</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <footer>
+    <span>Ridge Personalization · Internal Ops Use</span>
+    <span>Generated 3/29/2026</span>
+  </footer>
+
+</div>
+<script>
+const raw = [
+  ["1/17","R5031138","24 Karat Gold","6 mm Rounded","7.5","AURUI30545175","FALSE",0,"RG2RAU75",0,"NO","No","Janille"],
+  ["1/23","R5042956","24 Karat Gold","6 mm Rounded","10","AURUI30545110","FALSE",34,"RG2RAU10",0,"NO","No",""],
+  ["12/1","R4818289","24 Karat Gold","6 mm Rounded","10.5","AURUI305451105","FALSE",27,"RG2RAU105",0,"NO","No","Janille"],
+  ["2/2","R5063853","24 Karat Gold","6 mm Rounded","12","AURUI30545112","FALSE",16,"RG2RAU12",0,"NO","No",""],
+  ["1/9","R5014508","24 Karat Gold","6 mm Rounded","13","AURUI30545113","FALSE",0,"RG2RAU13",0,"NO","No",""],
+  ["2/24","R5118332","Gunmetal","6 mm Rounded","9","RG2RGM9","TRUE",0,"AURUI3051039",0,"NO","No",""],
+  ["2/27","R5124836","Platinum","6 mm Rounded","8","AURUI3051527","FALSE",0,"RG2RPT7",0,"NO","No",""],
+  ["2/21","R5110169","Platinum","6 mm Rounded","8.5","AURUI30515285","FALSE",0,"RG2RPT85",0,"NO","IS27961",""],
+  ["12/2","R4833952","Platinum","6 mm Rounded","9","AURUI3051529","FALSE",0,"RG2RPT9",0,"NO","IS27961",""],
+  ["12/3","R4837570","Platinum","6 mm Rounded","9.5","AURUI30515295","FALSE",14,"RG2RPT95",0,"NO","No",""],
+  ["12/12","R4902037","Platinum","6 mm Rounded","13","RG2RPT13","TRUE",0,"AURUI30515213",0,"NO","No",""],
+  ["2/20","R5109323","Royal Black","6 mm Rounded","8","AURUI3051018","FALSE",0,"RG2RRB8",0,"NO","IS27961",""],
+  ["1/29","R5053900","Royal Black","6 mm Rounded","9","AURUI3051019","FALSE",6,"RG2RRB9",0,"NO","No",""],
+  ["1/30","R5058182","Royal Black","6 mm Rounded","10","RG2RRB10","TRUE",0,"AURUI30510110",5,"YES","No",""],
+  ["1/21","R5038676","Royal Black","6 mm Rounded","11","AURUI30510111","FALSE",0,"RG2RRB11",0,"NO","No",""],
+  ["3/4","R5139936","24 Karat Gold","8 mm Beveled","8","AURUI3004518","FALSE",0,"RTGD8",0,"NO","No",""],
+  ["2/1","R5060695","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961","Janille"],
+  ["1/3","R5003264","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961",""],
+  ["2/7","R5075836","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961",""],
+  ["11/27","R4762610","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+  ["2/2","R5063020","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+  ["2/5","R5070620","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+  ["2/11","R5087897","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+  ["2/10","R5083343","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961","Janille"],
+  ["9/15","R3657418","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+  ["1/29","R5055616","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961","Janille"],
+  ["12/20","R4965041","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+  ["1/28","R5052310","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+  ["2/6","R5072676","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+  ["2/5","R5066759","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+  ["2/5","R5070775","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961","Janille"],
+  ["1/23","R5042323","24 Karat Gold","8 mm Beveled","11","AURUI30045111","FALSE",0,"RTGD11",0,"NO","IS27961","Janille - address change"],
+  ["1/22","R5039395","Carbon Fiber 3K","8 mm Beveled","9","RTCF9","TRUE",0,"AURCI3001259",1,"YES","No","Janille"],
+  ["1/23","R5043093","Gunmetal","8 mm Beveled","9","AURUI3001039","FALSE",0,"RTGM9",0,"NO","No",""],
+  ["1/28","R5052796","Gunmetal","8 mm Beveled","9","AURUI3001039","FALSE",0,"RTGM9",0,"NO","No","Janille"],
+  ["1/31","R5059224","Gunmetal","8 mm Beveled","11","AURUI30010311","FALSE",0,"RTGM11",0,"NO","IS27961",""],
+  ["11/22","R4725248","Gunmetal","8 mm Beveled","13","AURUI30010313","FALSE",0,"RTGM13",0,"NO","No","needs 6mm rounded-13"],
+  ["2/2","R5062991","Mopane Wood","8 mm Beveled","10","AURWI30075110","FALSE",0,"",0,"NO","IS27961",""],
+  ["11/23","R4732984","Platinum","8 mm Beveled","10","AURUI30015210","FALSE",0,"RG2B8PT10",0,"NO","IS27961",""],
+  ["1/4","R5005272","Platinum","8 mm Beveled","10","AURUI30015210","FALSE",0,"RG2B8PT10",0,"NO","IS27961",""],
+  ["3/12","R5163609","Platinum","8 mm Beveled","11","AURUI30015211","FALSE",0,"RG2B8PT11",0,"NO","IS27961",""],
+  ["2/3","R5067005","Platinum","8 mm Beveled","11.5","AURUI300152115","FALSE",0,"RG2B8PT115",1,"YES","IS27961","Janille - address change"],
+  ["2/4","R5068431","Royal Black","8 mm Beveled","8.5","AURUI30010185","FALSE",74,"RTBL85",0,"NO","No",""],
+  ["1/24","R5043927","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No",""],
+  ["1/30","R5057783","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No","Janille"],
+  ["1/5","R5006443","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No","Janille"],
+  ["1/26","R5035626","Royal Black","8 mm Beveled","11","AURUI30010111","FALSE",0,"RTBL11",0,"NO","IS27961",""],
+  ["5/12","R4257179","Royal Black","8 mm Beveled","11.5","AURUI300101115","FALSE",0,"RTBL115",0,"NO","IS27961","Janille"],
+  ["1/15","R5026734","Royal Black","8 mm Beveled","13","AURUI30010113","FALSE",0,"RTBL13",0,"NO","No",""]
+];
+
+function parseDays(d) {
+  const [m,day] = d.split('/').map(Number);
+  const year = m >= 4 ? 2025 : 2026;
+  return Math.floor((new Date(2026,2,29) - new Date(year,m-1,day)) / 86400000);
+}
+
+const orders = raw.map(r => ({
+  date:r[0], order:r[1], colorway:r[2], style:r[3], reqSize:r[4],
+  sku:r[5], onHand:+r[7], altSku:r[8], altOnHand:+r[9],
+  canAlt:r[10], arriving: r[11]!=="No" ? r[11] : null,
+  notes:r[12], days:parseDays(r[0])
+}));
+
+const ready    = orders.filter(o => o.onHand > 0 && o.canAlt !== "YES");
+const alt      = orders.filter(o => o.canAlt === "YES");
+const arriving = orders.filter(o => o.arriving && o.canAlt !== "YES" && o.onHand === 0);
+const ops      = orders.filter(o => !o.arriving && o.canAlt !== "YES" && o.onHand === 0);
+
+document.getElementById('m1').textContent = ready.length + alt.length;
+document.getElementById('m2').textContent = arriving.length;
+document.getElementById('m3').textContent = ops.length;
+document.getElementById('tc1').textContent = ready.length;
+document.getElementById('tc2').textContent = alt.length;
+document.getElementById('tc3').textContent = arriving.length;
+document.getElementById('tc4').textContent = ops.length;
+
+function noteCell(n) {
+  if (!n) return '';
+  if (n.toLowerCase().includes('address')) return `<span class="badge b-amber">Address change</span>`;
+  if (n.toLowerCase().includes('janille')) return `<span class="badge b-blue">Janille</span>`;
+  return `<span style="font-size:11px;color:var(--muted)">${n}</span>`;
+}
+
+function daysBadge(d) {
+  const cls = d > 90 ? 'b-red' : d > 30 ? 'b-amber' : 'b-gray';
+  return `<span class="badge ${cls}">${d}d</span>`;
+}
+
+function fill(id, rows, fn) {
+  document.querySelector('#'+id+' tbody').innerHTML = rows.length
+    ? rows.map(fn).join('')
+    : `<tr><td colspan="8" class="empty">No orders in this category.</td></tr>`;
+}
+
+fill('t-ready', ready, o => `<tr>
+  <td class="order-num">${o.order}</td><td>${o.date}</td>
+  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+  <td class="sku-text">${o.sku}</td>
+  <td><span class="badge b-green">${o.onHand} in stock</span></td>
+  <td>${noteCell(o.notes)}</td>
+</tr>`);
+
+fill('t-alt', alt, o => `<tr>
+  <td class="order-num">${o.order}</td><td>${o.date}</td>
+  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+  <td class="sku-text">${o.sku}</td>
+  <td class="sku-text" style="color:var(--blue-text)">${o.altSku}</td>
+  <td><span class="badge b-green">${o.altOnHand} in stock</span></td>
+</tr>`);
+
+fill('t-arriving', arriving, o => `<tr>
+  <td class="order-num">${o.order}</td><td>${o.date}</td>
+  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+  <td class="sku-text">${o.sku}</td>
+  <td><span class="badge b-amber">${o.arriving}</span></td>
+  <td>${noteCell(o.notes)}</td>
+</tr>`);
+
+fill('t-ops', ops, o => `<tr>
+  <td class="order-num">${o.order}</td><td>${o.date}</td>
+  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+  <td class="sku-text">${o.sku}</td>
+  <td>${daysBadge(o.days)}</td>
+  <td>${noteCell(o.notes) || (o.notes ? `<span style="font-size:11px;color:var(--muted)">${o.notes}</span>` : '')}</td>
+</tr>`);
+
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['ready','alt','arriving','ops'][i] === id);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>

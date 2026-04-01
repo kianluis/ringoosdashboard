@@ -303,7 +303,7 @@
   <div id="ready" class="panel active">
     <p class="panel-desc">Primary SKU has stock on hand at FTS — place now.</p>
     <div class="table-wrap"><table id="t-ready">
-      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>SKU</th><th>On hand</th><th>Notes</th><th>Done</th></tr></thead>
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>SKU</th><th>On hand</th><th>Done</th><th>Notes</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -311,7 +311,7 @@
   <div id="alt" class="panel">
     <p class="panel-desc">Original SKU is OOS but an alt SKU can fulfill the order.</p>
     <div class="table-wrap"><table id="t-alt">
-      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>Original SKU</th><th>Alt SKU</th><th>Alt on hand</th><th>Done</th></tr></thead>
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>Original SKU</th><th>Alt SKU</th><th>Alt on hand</th><th>Done</th><th>Notes</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -440,8 +440,8 @@ fill('t-ready', ready, o => `<tr id="row-ready-${o.order}">
   <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
   <td class="sku-text">${o.sku}</td>
   <td><span class="badge b-green">${o.onHand} in stock</span></td>
-  <td>${noteCell(o.notes)}</td>
   <td style="text-align:center"><input type="checkbox" onchange="markDone(this,'row-ready-${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
+  <td><div class="note-edit" id="ne-${o.order}"></div></td>
 </tr>`);
 
 fill('t-alt', alt, o => `<tr id="row-alt-${o.order}">
@@ -451,6 +451,7 @@ fill('t-alt', alt, o => `<tr id="row-alt-${o.order}">
   <td class="sku-text" style="color:var(--blue-text)">${o.altSku}</td>
   <td><span class="badge b-green">${o.altOnHand} in stock</span></td>
   <td style="text-align:center"><input type="checkbox" onchange="markDone(this,'row-alt-${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
+  <td><div class="note-edit" id="ne-${o.order}"></div></td>
 </tr>`);
 
 fill('t-arriving', arriving, o => `<tr>
@@ -458,7 +459,7 @@ fill('t-arriving', arriving, o => `<tr>
   <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
   <td class="sku-text">${o.sku}</td>
   <td><span class="badge b-amber">${o.arriving}</span></td>
-  <td>${noteCell(o.notes)}</td>
+  <td><div class="note-edit" id="ne-${o.order}"></div></td>
 </tr>`);
 
 fill('t-ops', ops, o => `<tr>
@@ -467,8 +468,95 @@ fill('t-ops', ops, o => `<tr>
   <td class="sku-text">${o.sku}</td>
   <td class="sku-text" style="color:var(--muted)">${o.altSku || '—'}</td>
   <td>${daysBadge(o.days)}</td>
-  <td>${noteCell(o.notes) || (o.notes ? `<span style="font-size:11px;color:var(--muted)">${o.notes}</span>` : '')}</td>
+  <td><div class="note-edit" id="ne-${o.order}"></div></td>
 </tr>`);
+
+const BIN_ID = 'RIDGE_OOS_BIN';
+const API_KEY = '$2a$10$yBC2fm45beql4taIgG.vGONu/FIudeXW6AjRa3Gk0.JtdV/a/Kg3O';
+let notesData = {};
+let binId = localStorage.getItem(BIN_ID + '_id') || null;
+
+async function loadNotes() {
+  if (!binId) { renderNoteInputs({}); return; }
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    const json = await res.json();
+    notesData = json.record || {};
+  } catch(e) { notesData = {}; }
+  renderNoteInputs(notesData);
+}
+
+async function saveNote(orderId, text) {
+  notesData[orderId] = text;
+  if (!binId) {
+    try {
+      const res = await fetch('https://api.jsonbin.io/v3/b', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': API_KEY,
+          'X-Bin-Name': 'ridge-oos-notes',
+          'X-Bin-Private': 'false'
+        },
+        body: JSON.stringify(notesData)
+      });
+      const json = await res.json();
+      binId = json.metadata?.id;
+      if (binId) localStorage.setItem(BIN_ID + '_id', binId);
+    } catch(e) {}
+  } else {
+    try {
+      await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': API_KEY
+        },
+        body: JSON.stringify(notesData)
+      });
+    } catch(e) {}
+  }
+}
+
+function renderNoteInputs(data) {
+  document.querySelectorAll('.note-edit').forEach(div => {
+    const orderId = div.id.replace('ne-', '');
+    const saved = data[orderId] || '';
+    div.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <textarea placeholder="Add note…"
+          style="font-size:11px;padding:4px 7px;border:0.5px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);width:100%;min-width:160px;font-family:var(--font);resize:none;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:hidden;display:block;"
+          id="ni-${orderId}">${saved.replace(/</g,'&lt;')}</textarea>
+        <span id="nt-${orderId}" style="font-size:10px;color:var(--green-text);">${saved ? '✓ Saved' : ''}</span>
+      </div>`;
+    const textarea = div.querySelector('textarea');
+    const autoResize = () => { textarea.style.height = 'auto'; textarea.style.height = textarea.scrollHeight + 'px'; };
+    autoResize();
+    textarea.addEventListener('input', () => { autoResize(); debouncedSave(orderId); });
+  });
+}
+
+const saveTimers = {};
+function debouncedSave(orderId) {
+  const tick = document.getElementById('nt-' + orderId);
+  if (tick) { tick.textContent = 'Saving…'; tick.style.color = 'var(--muted)'; }
+  clearTimeout(saveTimers[orderId]);
+  saveTimers[orderId] = setTimeout(async () => {
+    await submitNote(orderId);
+  }, 1000);
+}
+
+async function submitNote(orderId) {
+  const input = document.getElementById('ni-' + orderId);
+  const tick = document.getElementById('nt-' + orderId);
+  if (!input) return;
+  const text = input.value.trim();
+  if (tick) { tick.textContent = '…'; tick.style.color = 'var(--muted)'; }
+  await saveNote(orderId, text);
+  if (tick) { tick.textContent = '✓'; tick.style.color = 'var(--green-text)'; }
+}
 
 function markDone(cb, rowId) {
   const row = document.getElementById(rowId);
@@ -484,6 +572,8 @@ function showTab(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+
+loadNotes();
 </script>
 </body>
 </html>

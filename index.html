@@ -303,7 +303,7 @@
   <div id="ready" class="panel active">
     <p class="panel-desc">Primary SKU has stock on hand at FTS — place now.</p>
     <div class="table-wrap"><table id="t-ready">
-      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>SKU</th><th>On hand</th><th>Notes</th></tr></thead>
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>SKU</th><th>On hand</th><th>Notes</th><th>Done</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -311,7 +311,7 @@
   <div id="alt" class="panel">
     <p class="panel-desc">Original SKU is OOS but an alt SKU can fulfill the order.</p>
     <div class="table-wrap"><table id="t-alt">
-      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>Original SKU</th><th>Alt SKU</th><th>Alt on hand</th></tr></thead>
+      <thead><tr><th>Order</th><th>Date</th><th>Colorway</th><th>Style</th><th>Req. size</th><th>Original SKU</th><th>Alt SKU</th><th>Alt on hand</th><th>Done</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -435,20 +435,22 @@ function fill(id, rows, fn) {
     : `<tr><td colspan="8" class="empty">No orders in this category.</td></tr>`;
 }
 
-fill('t-ready', ready, o => `<tr>
+fill('t-ready', ready, o => `<tr id="row-ready-${o.order}">
   <td class="order-num">${o.order}</td><td>${o.date}</td>
   <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
   <td class="sku-text">${o.sku}</td>
   <td><span class="badge b-green">${o.onHand} in stock</span></td>
   <td>${noteCell(o.notes)}</td>
+  <td style="text-align:center"><input type="checkbox" onchange="markDone(this,'row-ready-${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
 </tr>`);
 
-fill('t-alt', alt, o => `<tr>
+fill('t-alt', alt, o => `<tr id="row-alt-${o.order}">
   <td class="order-num">${o.order}</td><td>${o.date}</td>
   <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
   <td class="sku-text">${o.sku}</td>
   <td class="sku-text" style="color:var(--blue-text)">${o.altSku}</td>
   <td><span class="badge b-green">${o.altOnHand} in stock</span></td>
+  <td style="text-align:center"><input type="checkbox" onchange="markDone(this,'row-alt-${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
 </tr>`);
 
 fill('t-arriving', arriving, o => `<tr>
@@ -467,6 +469,13 @@ fill('t-ops', ops, o => `<tr>
   <td>${daysBadge(o.days)}</td>
   <td>${noteCell(o.notes) || (o.notes ? `<span style="font-size:11px;color:var(--muted)">${o.notes}</span>` : '')}</td>
 </tr>`);
+
+function markDone(cb, rowId) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  row.style.opacity = cb.checked ? '0.4' : '1';
+  row.querySelectorAll('td').forEach(td => td.style.textDecoration = cb.checked ? 'line-through' : '');
+}
 
 function showTab(id) {
   document.querySelectorAll('.tab').forEach((t,i) => {

@@ -472,7 +472,7 @@ fill('t-ops', ops, o => `<tr>
 </tr>`);
 
 const BIN_ID = 'RIDGE_OOS_BIN';
-const API_KEY = '$2a$10$yBC2fm45beql4taIgG.vGONu/FIudeXW6AjRa3Gk0.JtdV/a/Kg3O';
+const API_KEY = '$2a$10$placeholder';
 let notesData = {};
 let binId = localStorage.getItem(BIN_ID + '_id') || null;
 
@@ -527,14 +527,22 @@ function renderNoteInputs(data) {
     div.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:2px;">
         <textarea placeholder="Add note…"
-          style="font-size:11px;padding:4px 7px;border:0.5px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);width:100%;min-width:160px;font-family:var(--font);resize:none;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:hidden;display:block;"
+          style="font-size:11px;padding:3px 7px;border:0.5px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);width:100%;font-family:var(--font);resize:none;line-height:1.5;overflow:hidden;display:block;box-sizing:border-box;"
           id="ni-${orderId}">${saved.replace(/</g,'&lt;')}</textarea>
         <span id="nt-${orderId}" style="font-size:10px;color:var(--green-text);">${saved ? '✓ Saved' : ''}</span>
       </div>`;
     const textarea = div.querySelector('textarea');
-    const autoResize = () => { textarea.style.height = 'auto'; textarea.style.height = textarea.scrollHeight + 'px'; };
-    autoResize();
+    const autoResize = () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    };
+    textarea.style.height = (parseFloat(getComputedStyle(textarea).lineHeight) + 6) + 'px';
+    if (saved) autoResize();
+    textarea.addEventListener('focus', autoResize);
     textarea.addEventListener('input', () => { autoResize(); debouncedSave(orderId); });
+    textarea.addEventListener('blur', () => {
+      if (!textarea.value) textarea.style.height = (parseFloat(getComputedStyle(textarea).lineHeight) + 6) + 'px';
+    });
   });
 }
 

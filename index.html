@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ring OOS Orders — 3/27</title>
+<title>Ring OOS Orders Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -245,6 +245,35 @@
     font-size: 13px;
   }
 
+  .batch-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .batch-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 4px;
+  }
+  .batch-btn {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+  .batch-btn:hover { background: var(--surface2); color: var(--text); }
+  .batch-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
   footer {
     margin-top: 2.5rem;
     padding-top: 1rem;
@@ -252,10 +281,6 @@
     font-size: 11px;
     color: var(--muted);
     font-family: var(--mono);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 6px;
   }
 </style>
 </head>
@@ -267,13 +292,18 @@
       <div class="logo">Ridge — Personalization Ops</div>
       <h1>Ring OOS Orders</h1>
     </div>
-    <div class="stamp">As of 3/29/2026 &nbsp;·&nbsp; 49 orders</div>
+    <div class="stamp" id="batch-stamp">As of 3/29/2026 · 49 orders</div>
   </header>
+
+  <div class="batch-bar">
+    <span class="batch-label">Batch</span>
+    <div id="batch-buttons"></div>
+  </div>
 
   <div class="metrics">
     <div class="metric">
       <div class="metric-label">Total OOS</div>
-      <div class="metric-value mv-total">49</div>
+      <div class="metric-value mv-total" id="m0">—</div>
       <div class="metric-sub">open orders</div>
     </div>
     <div class="metric">
@@ -333,95 +363,92 @@
   </div>
 
   <footer>
-    <span>Ridge Personalization · Internal Ops Use</span>
-    <span>Generated 3/29/2026</span>
+    <span>Ridge Personalization · Internal Ops Use &nbsp;·&nbsp; Generated 3/29/2026</span>
   </footer>
 
 </div>
 <script>
-const raw = [
-  ["1/17","R5031138","24 Karat Gold","6 mm Rounded","7.5","AURUI30545175","FALSE",0,"RG2RAU75",0,"NO","No","Janille"],
-  ["1/23","R5042956","24 Karat Gold","6 mm Rounded","10","AURUI30545110","FALSE",34,"RG2RAU10",0,"NO","No",""],
-  ["12/1","R4818289","24 Karat Gold","6 mm Rounded","10.5","AURUI305451105","FALSE",27,"RG2RAU105",0,"NO","No","Janille"],
-  ["2/2","R5063853","24 Karat Gold","6 mm Rounded","12","AURUI30545112","FALSE",16,"RG2RAU12",0,"NO","No",""],
-  ["1/9","R5014508","24 Karat Gold","6 mm Rounded","13","AURUI30545113","FALSE",0,"RG2RAU13",0,"NO","No",""],
-  ["2/24","R5118332","Gunmetal","6 mm Rounded","9","RG2RGM9","TRUE",0,"AURUI3051039",0,"NO","No",""],
-  ["2/27","R5124836","Platinum","6 mm Rounded","8","AURUI3051527","FALSE",0,"RG2RPT7",0,"NO","No",""],
-  ["2/21","R5110169","Platinum","6 mm Rounded","8.5","AURUI30515285","FALSE",0,"RG2RPT85",0,"NO","IS27961",""],
-  ["12/2","R4833952","Platinum","6 mm Rounded","9","AURUI3051529","FALSE",0,"RG2RPT9",0,"NO","IS27961",""],
-  ["12/3","R4837570","Platinum","6 mm Rounded","9.5","AURUI30515295","FALSE",14,"RG2RPT95",0,"NO","No",""],
-  ["12/12","R4902037","Platinum","6 mm Rounded","13","RG2RPT13","TRUE",0,"AURUI30515213",0,"NO","No",""],
-  ["2/20","R5109323","Royal Black","6 mm Rounded","8","AURUI3051018","FALSE",0,"RG2RRB8",0,"NO","IS27961",""],
-  ["1/29","R5053900","Royal Black","6 mm Rounded","9","AURUI3051019","FALSE",6,"RG2RRB9",0,"NO","No",""],
-  ["1/30","R5058182","Royal Black","6 mm Rounded","10","RG2RRB10","TRUE",0,"AURUI30510110",5,"YES","No",""],
-  ["1/21","R5038676","Royal Black","6 mm Rounded","11","AURUI30510111","FALSE",0,"RG2RRB11",0,"NO","No",""],
-  ["3/4","R5139936","24 Karat Gold","8 mm Beveled","8","AURUI3004518","FALSE",0,"RTGD8",0,"NO","No",""],
-  ["2/1","R5060695","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961","Janille"],
-  ["1/3","R5003264","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961",""],
-  ["2/7","R5075836","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961",""],
-  ["11/27","R4762610","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
-  ["2/2","R5063020","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
-  ["2/5","R5070620","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
-  ["2/11","R5087897","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
-  ["2/10","R5083343","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961","Janille"],
-  ["9/15","R3657418","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
-  ["1/29","R5055616","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961","Janille"],
-  ["12/20","R4965041","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
-  ["1/28","R5052310","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
-  ["2/6","R5072676","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
-  ["2/5","R5066759","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
-  ["2/5","R5070775","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961","Janille"],
-  ["1/23","R5042323","24 Karat Gold","8 mm Beveled","11","AURUI30045111","FALSE",0,"RTGD11",0,"NO","IS27961","Janille - address change"],
-  ["1/22","R5039395","Carbon Fiber 3K","8 mm Beveled","9","RTCF9","TRUE",0,"AURCI3001259",1,"YES","No","Janille"],
-  ["1/23","R5043093","Gunmetal","8 mm Beveled","9","AURUI3001039","FALSE",0,"RTGM9",0,"NO","No",""],
-  ["1/28","R5052796","Gunmetal","8 mm Beveled","9","AURUI3001039","FALSE",0,"RTGM9",0,"NO","No","Janille"],
-  ["1/31","R5059224","Gunmetal","8 mm Beveled","11","AURUI30010311","FALSE",0,"RTGM11",0,"NO","IS27961",""],
-  ["11/22","R4725248","Gunmetal","8 mm Beveled","13","AURUI30010313","FALSE",0,"RTGM13",0,"NO","No","needs 6mm rounded-13"],
-  ["2/2","R5062991","Mopane Wood","8 mm Beveled","10","AURWI30075110","FALSE",0,"",0,"NO","IS27961",""],
-  ["11/23","R4732984","Platinum","8 mm Beveled","10","AURUI30015210","FALSE",0,"RG2B8PT10",0,"NO","IS27961",""],
-  ["1/4","R5005272","Platinum","8 mm Beveled","10","AURUI30015210","FALSE",0,"RG2B8PT10",0,"NO","IS27961",""],
-  ["3/12","R5163609","Platinum","8 mm Beveled","11","AURUI30015211","FALSE",0,"RG2B8PT11",0,"NO","IS27961",""],
-  ["2/3","R5067005","Platinum","8 mm Beveled","11.5","AURUI300152115","FALSE",0,"RG2B8PT115",1,"YES","IS27961","Janille - address change"],
-  ["2/4","R5068431","Royal Black","8 mm Beveled","8.5","AURUI30010185","FALSE",74,"RTBL85",0,"NO","No",""],
-  ["1/24","R5043927","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No",""],
-  ["1/30","R5057783","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No","Janille"],
-  ["1/5","R5006443","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No","Janille"],
-  ["1/26","R5035626","Royal Black","8 mm Beveled","11","AURUI30010111","FALSE",0,"RTBL11",0,"NO","IS27961",""],
-  ["5/12","R4257179","Royal Black","8 mm Beveled","11.5","AURUI300101115","FALSE",0,"RTBL115",0,"NO","IS27961","Janille"],
-  ["1/15","R5026734","Royal Black","8 mm Beveled","13","AURUI30010113","FALSE",0,"RTBL13",0,"NO","No",""]
+// ─── BATCHES ────────────────────────────────────────────────
+// To add a new batch in 2 weeks, copy the structure below and
+// add a new entry to the `batches` array. The dashboard will
+// automatically add a new button for it.
+// ────────────────────────────────────────────────────────────
+
+const batches = [
+  {
+    label: "3/27",
+    date: "3/29/2026",
+    raw: [
+      ["1/17","R5031138","24 Karat Gold","6 mm Rounded","7.5","AURUI30545175","FALSE",0,"RG2RAU75",0,"NO","No",""],
+      ["1/23","R5042956","24 Karat Gold","6 mm Rounded","10","AURUI30545110","FALSE",34,"RG2RAU10",0,"NO","No",""],
+      ["12/1","R4818289","24 Karat Gold","6 mm Rounded","10.5","AURUI305451105","FALSE",27,"RG2RAU105",0,"NO","No",""],
+      ["2/2","R5063853","24 Karat Gold","6 mm Rounded","12","AURUI30545112","FALSE",16,"RG2RAU12",0,"NO","No",""],
+      ["1/9","R5014508","24 Karat Gold","6 mm Rounded","13","AURUI30545113","FALSE",0,"RG2RAU13",0,"NO","No",""],
+      ["2/24","R5118332","Gunmetal","6 mm Rounded","9","RG2RGM9","TRUE",0,"AURUI3051039",0,"NO","No",""],
+      ["2/27","R5124836","Platinum","6 mm Rounded","8","AURUI3051527","FALSE",0,"RG2RPT7",0,"NO","No",""],
+      ["2/21","R5110169","Platinum","6 mm Rounded","8.5","AURUI30515285","FALSE",0,"RG2RPT85",0,"NO","IS27961",""],
+      ["12/2","R4833952","Platinum","6 mm Rounded","9","AURUI3051529","FALSE",0,"RG2RPT9",0,"NO","IS27961",""],
+      ["12/3","R4837570","Platinum","6 mm Rounded","9.5","AURUI30515295","FALSE",14,"RG2RPT95",0,"NO","No",""],
+      ["12/12","R4902037","Platinum","6 mm Rounded","13","RG2RPT13","TRUE",0,"AURUI30515213",0,"NO","No",""],
+      ["2/20","R5109323","Royal Black","6 mm Rounded","8","AURUI3051018","FALSE",0,"RG2RRB8",0,"NO","IS27961",""],
+      ["1/29","R5053900","Royal Black","6 mm Rounded","9","AURUI3051019","FALSE",6,"RG2RRB9",0,"NO","No",""],
+      ["1/30","R5058182","Royal Black","6 mm Rounded","10","RG2RRB10","TRUE",0,"AURUI30510110",5,"YES","No",""],
+      ["1/21","R5038676","Royal Black","6 mm Rounded","11","AURUI30510111","FALSE",0,"RG2RRB11",0,"NO","No",""],
+      ["3/4","R5139936","24 Karat Gold","8 mm Beveled","8","AURUI3004518","FALSE",0,"RTGD8",0,"NO","No",""],
+      ["2/1","R5060695","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961",""],
+      ["1/3","R5003264","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961",""],
+      ["2/7","R5075836","24 Karat Gold","8 mm Beveled","9","AURUI3004519","FALSE",0,"RTGD9",0,"NO","IS27961",""],
+      ["11/27","R4762610","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+      ["2/2","R5063020","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+      ["2/5","R5070620","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+      ["2/11","R5087897","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+      ["2/10","R5083343","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+      ["9/15","R3657418","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+      ["1/29","R5055616","24 Karat Gold","8 mm Beveled","10","AURUI30045110","FALSE",0,"RTGD10",0,"NO","IS27961",""],
+      ["12/20","R4965041","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+      ["1/28","R5052310","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+      ["2/6","R5072676","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+      ["2/5","R5066759","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+      ["2/5","R5070775","24 Karat Gold","8 mm Beveled","10.5","AURUI300451105","FALSE",0,"RTGD105",0,"NO","IS27961",""],
+      ["1/23","R5042323","24 Karat Gold","8 mm Beveled","11","AURUI30045111","FALSE",0,"RTGD11",0,"NO","IS27961",""],
+      ["1/22","R5039395","Carbon Fiber 3K","8 mm Beveled","9","RTCF9","TRUE",0,"AURCI3001259",1,"YES","No",""],
+      ["1/23","R5043093","Gunmetal","8 mm Beveled","9","AURUI3001039","FALSE",0,"RTGM9",0,"NO","No",""],
+      ["1/28","R5052796","Gunmetal","8 mm Beveled","9","AURUI3001039","FALSE",0,"RTGM9",0,"NO","No",""],
+      ["1/31","R5059224","Gunmetal","8 mm Beveled","11","AURUI30010311","FALSE",0,"RTGM11",0,"NO","IS27961",""],
+      ["11/22","R4725248","Gunmetal","8 mm Beveled","13","AURUI30010313","FALSE",0,"RTGM13",0,"NO","No","needs 6mm rounded-13"],
+      ["2/2","R5062991","Mopane Wood","8 mm Beveled","10","AURWI30075110","FALSE",0,"",0,"NO","IS27961",""],
+      ["11/23","R4732984","Platinum","8 mm Beveled","10","AURUI30015210","FALSE",0,"RG2B8PT10",0,"NO","IS27961",""],
+      ["1/4","R5005272","Platinum","8 mm Beveled","10","AURUI30015210","FALSE",0,"RG2B8PT10",0,"NO","IS27961",""],
+      ["3/12","R5163609","Platinum","8 mm Beveled","11","AURUI30015211","FALSE",0,"RG2B8PT11",0,"NO","IS27961",""],
+      ["2/3","R5067005","Platinum","8 mm Beveled","11.5","AURUI300152115","FALSE",0,"RG2B8PT115",1,"YES","IS27961",""],
+      ["2/4","R5068431","Royal Black","8 mm Beveled","8.5","AURUI30010185","FALSE",74,"RTBL85",0,"NO","No",""],
+      ["1/24","R5043927","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No",""],
+      ["1/30","R5057783","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No",""],
+      ["1/5","R5006443","Royal Black","8 mm Beveled","9","RTBL9","FALSE",0,"AURUI3001019",0,"NO","No",""],
+      ["1/26","R5035626","Royal Black","8 mm Beveled","11","AURUI30010111","FALSE",0,"RTBL11",0,"NO","IS27961",""],
+      ["5/12","R4257179","Royal Black","8 mm Beveled","11.5","AURUI300101115","FALSE",0,"RTBL115",0,"NO","IS27961",""],
+      ["1/15","R5026734","Royal Black","8 mm Beveled","13","AURUI30010113","FALSE",0,"RTBL13",0,"NO","No",""]
+    ]
+  }
+  // ── ADD NEW BATCHES BELOW ──────────────────────────────────
+  // ,{
+  //   label: "4/10",
+  //   date: "4/10/2026",
+  //   raw: [
+  //     ["date","order#","colorway","style","req size","sku","oos","on hand","alt sku","alt on hand","can alt","arriving","notes"],
+  //     ...
+  //   ]
+  // }
+  // ──────────────────────────────────────────────────────────
 ];
 
-function parseDays(d) {
+let currentBatch = 0;
+
+function parseDays(d, batchDate) {
   const [m,day] = d.split('/').map(Number);
   const year = m >= 4 ? 2025 : 2026;
-  return Math.floor((new Date(2026,2,29) - new Date(year,m-1,day)) / 86400000);
-}
-
-const orders = raw.map(r => ({
-  date:r[0], order:r[1], colorway:r[2], style:r[3], reqSize:r[4],
-  sku:r[5], onHand:+r[7], altSku:r[8], altOnHand:+r[9],
-  canAlt:r[10], arriving: r[11]!=="No" ? r[11] : null,
-  notes:r[12], days:parseDays(r[0])
-}));
-
-const ready    = orders.filter(o => o.onHand > 0 && o.canAlt !== "YES");
-const alt      = orders.filter(o => o.canAlt === "YES");
-const arriving = orders.filter(o => o.arriving && o.canAlt !== "YES" && o.onHand === 0);
-const ops      = orders.filter(o => !o.arriving && o.canAlt !== "YES" && o.onHand === 0);
-
-document.getElementById('m1').textContent = ready.length + alt.length;
-document.getElementById('m2').textContent = arriving.length;
-document.getElementById('m3').textContent = ops.length;
-document.getElementById('tc1').textContent = ready.length;
-document.getElementById('tc2').textContent = alt.length;
-document.getElementById('tc3').textContent = arriving.length;
-document.getElementById('tc4').textContent = ops.length;
-
-function noteCell(n) {
-  if (!n) return '';
-  if (n.toLowerCase().includes('address')) return `<span class="badge b-amber">Address change</span>`;
-  if (n.toLowerCase().includes('janille')) return `<span class="badge b-blue">Janille</span>`;
-  return `<span style="font-size:11px;color:var(--muted)">${n}</span>`;
+  const ref = batchDate ? new Date(batchDate) : new Date(2026,2,29);
+  return Math.floor((ref - new Date(year,m-1,day)) / 86400000);
 }
 
 function daysBadge(d) {
@@ -432,51 +459,98 @@ function daysBadge(d) {
 function fill(id, rows, fn) {
   document.querySelector('#'+id+' tbody').innerHTML = rows.length
     ? rows.map(fn).join('')
-    : `<tr><td colspan="8" class="empty">No orders in this category.</td></tr>`;
+    : `<tr><td colspan="9" class="empty">No orders in this category.</td></tr>`;
 }
 
-fill('t-ready', ready, o => `<tr id="row-ready-${o.order}">
-  <td class="order-num">${o.order}</td><td>${o.date}</td>
-  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
-  <td class="sku-text">${o.sku}</td>
-  <td><span class="badge b-green">${o.onHand} in stock</span></td>
-  <td style="text-align:center"><input type="checkbox" onchange="markDone(this,'row-ready-${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
-  <td><div class="note-edit" id="ne-${o.order}"></div></td>
-</tr>`);
+function loadBatch(idx) {
+  currentBatch = idx;
+  const batch = batches[idx];
 
-fill('t-alt', alt, o => `<tr id="row-alt-${o.order}">
-  <td class="order-num">${o.order}</td><td>${o.date}</td>
-  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
-  <td class="sku-text">${o.sku}</td>
-  <td class="sku-text" style="color:var(--blue-text)">${o.altSku}</td>
-  <td><span class="badge b-green">${o.altOnHand} in stock</span></td>
-  <td style="text-align:center"><input type="checkbox" onchange="markDone(this,'row-alt-${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
-  <td><div class="note-edit" id="ne-${o.order}"></div></td>
-</tr>`);
+  document.querySelectorAll('.batch-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+  document.getElementById('batch-stamp').textContent = `Batch ${idx+1} · ${batch.date} · ${batch.raw.length} orders`;
 
-fill('t-arriving', arriving, o => `<tr>
-  <td class="order-num">${o.order}</td><td>${o.date}</td>
-  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
-  <td class="sku-text">${o.sku}</td>
-  <td><span class="badge b-amber">${o.arriving}</span></td>
-  <td><div class="note-edit" id="ne-${o.order}"></div></td>
-</tr>`);
+  const orders = batch.raw.map(r => ({
+    date:r[0], order:r[1], colorway:r[2], style:r[3], reqSize:r[4],
+    sku:r[5], onHand:+r[7], altSku:r[8], altOnHand:+r[9],
+    canAlt:r[10], arriving: r[11]!=="No" ? r[11] : null,
+    notes:r[12], days:parseDays(r[0])
+  }));
 
-fill('t-ops', ops, o => `<tr>
-  <td class="order-num">${o.order}</td><td>${o.date}</td>
-  <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
-  <td class="sku-text">${o.sku}</td>
-  <td class="sku-text" style="color:var(--muted)">${o.altSku || '—'}</td>
-  <td>${daysBadge(o.days)}</td>
-  <td><div class="note-edit" id="ne-${o.order}"></div></td>
-</tr>`);
+  const ready    = orders.filter(o => o.onHand > 0 && o.canAlt !== "YES");
+  const alt      = orders.filter(o => o.canAlt === "YES");
+  const arriving = orders.filter(o => o.arriving && o.canAlt !== "YES" && o.onHand === 0);
+  const ops      = orders.filter(o => !o.arriving && o.canAlt !== "YES" && o.onHand === 0);
+
+  document.getElementById('m0').textContent = orders.length;
+  document.getElementById('m1').textContent = ready.length + alt.length;
+  document.getElementById('m2').textContent = arriving.length;
+  document.getElementById('m3').textContent = ops.length;
+  document.getElementById('tc1').textContent = ready.length;
+  document.getElementById('tc2').textContent = alt.length;
+  document.getElementById('tc3').textContent = arriving.length;
+  document.getElementById('tc4').textContent = ops.length;
+
+  fill('t-ready', ready, o => `<tr id="row-ready-${o.order}">
+    <td class="order-num">${o.order}</td><td>${o.date}</td>
+    <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+    <td class="sku-text">${o.sku}</td>
+    <td><span class="badge b-green">${o.onHand} in stock</span></td>
+    <td style="text-align:center"><input type="checkbox" data-order="${o.order}" onchange="markDone(this,'row-ready-${o.order}','${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
+    <td><div class="note-edit" id="ne-${o.order}"></div></td>
+  </tr>`);
+
+  fill('t-alt', alt, o => `<tr id="row-alt-${o.order}">
+    <td class="order-num">${o.order}</td><td>${o.date}</td>
+    <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+    <td class="sku-text">${o.sku}</td>
+    <td class="sku-text" style="color:var(--blue-text)">${o.altSku}</td>
+    <td><span class="badge b-green">${o.altOnHand} in stock</span></td>
+    <td style="text-align:center"><input type="checkbox" data-order="${o.order}" onchange="markDone(this,'row-alt-${o.order}','${o.order}')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-text)"></td>
+    <td><div class="note-edit" id="ne-${o.order}"></div></td>
+  </tr>`);
+
+  fill('t-arriving', arriving, o => `<tr>
+    <td class="order-num">${o.order}</td><td>${o.date}</td>
+    <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+    <td class="sku-text">${o.sku}</td>
+    <td><span class="badge b-amber">${o.arriving}</span></td>
+    <td><div class="note-edit" id="ne-${o.order}"></div></td>
+  </tr>`);
+
+  fill('t-ops', ops, o => `<tr>
+    <td class="order-num">${o.order}</td><td>${o.date}</td>
+    <td>${o.colorway}</td><td>${o.style}</td><td>${o.reqSize}</td>
+    <td class="sku-text">${o.sku}</td>
+    <td class="sku-text" style="color:var(--muted)">${o.altSku || '—'}</td>
+    <td>${daysBadge(o.days)}</td>
+    <td><div class="note-edit" id="ne-${o.order}"></div></td>
+  </tr>`);
+
+  loadNotes();
+}
+
+// Build batch buttons
+const batchButtons = document.getElementById('batch-buttons');
+batchButtons.style.display = 'flex';
+batchButtons.style.gap = '6px';
+batches.forEach((b, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'batch-btn' + (i === 0 ? ' active' : '');
+  btn.textContent = b.label;
+  btn.onclick = () => loadBatch(i);
+  batchButtons.appendChild(btn);
+});
+
+loadBatch(0);
 
 const BIN_ID = 'RIDGE_OOS_BIN';
 const API_KEY = '$2a$10$placeholder';
 let notesData = {};
-let binId = localStorage.getItem(BIN_ID + '_id') || null;
+let binId = null;
 
 async function loadNotes() {
+  const key = BIN_ID + '_batch' + currentBatch + '_id';
+  binId = localStorage.getItem(key) || null;
   if (!binId) { renderNoteInputs({}); return; }
   try {
     const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
@@ -486,10 +560,11 @@ async function loadNotes() {
     notesData = json.record || {};
   } catch(e) { notesData = {}; }
   renderNoteInputs(notesData);
+  applyDoneStates(notesData);
 }
 
-async function saveNote(orderId, text) {
-  notesData[orderId] = text;
+async function saveNote(key, value) {
+  notesData[key] = value;
   if (!binId) {
     try {
       const res = await fetch('https://api.jsonbin.io/v3/b', {
@@ -504,7 +579,7 @@ async function saveNote(orderId, text) {
       });
       const json = await res.json();
       binId = json.metadata?.id;
-      if (binId) localStorage.setItem(BIN_ID + '_id', binId);
+      if (binId) localStorage.setItem(BIN_ID + '_batch' + currentBatch + '_id', binId);
     } catch(e) {}
   } else {
     try {
@@ -566,11 +641,27 @@ async function submitNote(orderId) {
   if (tick) { tick.textContent = '✓'; tick.style.color = 'var(--green-text)'; }
 }
 
-function markDone(cb, rowId) {
+function applyDoneStates(data) {
+  document.querySelectorAll('input[type="checkbox"][data-order]').forEach(cb => {
+    const orderId = cb.dataset.order;
+    const isDone = !!(data['done_' + orderId]);
+    cb.checked = isDone;
+    const row = cb.closest('tr');
+    if (row) {
+      row.style.opacity = isDone ? '0.4' : '1';
+      row.querySelectorAll('td').forEach(td => td.style.textDecoration = isDone ? 'line-through' : '');
+    }
+  });
+}
+
+async function markDone(cb, rowId, orderId) {
   const row = document.getElementById(rowId);
-  if (!row) return;
-  row.style.opacity = cb.checked ? '0.4' : '1';
-  row.querySelectorAll('td').forEach(td => td.style.textDecoration = cb.checked ? 'line-through' : '');
+  if (row) {
+    row.style.opacity = cb.checked ? '0.4' : '1';
+    row.querySelectorAll('td').forEach(td => td.style.textDecoration = cb.checked ? 'line-through' : '');
+  }
+  notesData['done_' + orderId] = cb.checked ? true : false;
+  await saveNote('done_' + orderId, cb.checked);
 }
 
 function showTab(id) {
